@@ -5,28 +5,35 @@ require_relative '../lib/jobs_in_queue'
 
 describe "JobsInQueue" do
 
-  context 'simple cases before' do
+  context 'testing the simple cases before' do
 
-    it 'with no job' do
-      jobs_in_queue = JobsInQueue.new('')
-      expect(jobs_in_queue.queue).to eq ''
+    context 'with no jobs' do
+
+      it 'return an empty sequence' do
+        jobs_in_queue = JobsInQueue.new('')
+        expect(jobs_in_queue.queue).to eq [] # sequence => [] not ''
+      end
+
     end
 
-    context 'with more jobs: ' do
+    context 'with more jobs ' do
 
-      it 'one' do
+      it 'return a sequence with single job' do
         jobs_in_queue = JobsInQueue.new('a =>')
-        expect(jobs_in_queue.queue).to eq 'a'
+        expect(jobs_in_queue.queue).to eq ['a =>']
       end
 
-      it 'two' do
-        skip
+      it 'return a sequence with two jobs' do
+        jobs_in_queue = JobsInQueue.new('a =>\nb =>')
+        expect(jobs_in_queue.queue).to eq ['a =>','b =>']
       end
 
-      it 'three' do
-        skip
-
+      it 'return a sequence with two jobs (with \n escaped)' do
+        jobs_in_queue = JobsInQueue.new("a =>\nb =>")
+        expect(jobs_in_queue.queue).to eq ['a =>','b =>']
       end
+
+      # three is the perfect number, but not in our case :)
 
     end
 

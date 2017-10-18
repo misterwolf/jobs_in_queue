@@ -18,15 +18,9 @@ class JobsInQueue
     # regular expression for not dependent job
     # ^ => just one not digit letter. Just one is not specified.
     # $ => the string end there 'a =>' => ok, 'a => ' NO ok!
-    # jobs =~ /^\D =>$/ => this work.
 
-    # simple, but something of particoular is coming
-    @queue = if jobs == ''
-      jobs
-    else
-      jobs.gsub(' =>', '')
-    end
-
+    jobs = jobs.gsub('\n',"\n") # I really don't like that user have to put "" instead of ''
+    @queue = jobs.scan(/^\D =>$/) # scan is good now to proceed with \n also in ''
   end
 
   def queue
