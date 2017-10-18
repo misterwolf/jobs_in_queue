@@ -12,15 +12,21 @@ describe "JobsInQueue" do
       expect(jobs_in_queue.queue).to eq ''
     end
 
-    it 'with one job' do
-      # it starts to be more serious 
-    end
+    context 'with more jobs: ' do
 
-    it 'with two jobs' do
+      it 'one' do
+        jobs_in_queue = JobsInQueue.new('a =>')
+        expect(jobs_in_queue.queue).to eq 'a'
+      end
 
-    end
+      it 'two' do
+        skip
+      end
 
-    it 'with three jobs' do
+      it 'three' do
+        skip
+
+      end
 
     end
 
@@ -28,12 +34,30 @@ describe "JobsInQueue" do
 
   context 'then, error or exception cases' do
 
-    context 'dead lock dependency (when a job depends from itself)' do
+    context 'with a not well-formed job' do
+
+      it 'wrong symbol for dependency' do
+        skip
+      end
+
+      it 'wrong symbol for dependent job' do
+        skip
+      end
+
+      it 'wrong symbol for prior job' do
+        skip
+      end
 
     end
-    context 'circular dependencies' do
+
+    it 'dead lock dependency (when a job depends from itself)' do
+      skip
+    end
+
+    it 'circular dependencies' do
       # wow!
       # let's see after
+      skip
     end
 
   end
