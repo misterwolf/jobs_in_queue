@@ -31,7 +31,7 @@ class JobsStack
   end
 
   def queue
-    @queue
+    @queue.sort {|a,b| a<=>b} # sort alphabetically
   end
 
 end

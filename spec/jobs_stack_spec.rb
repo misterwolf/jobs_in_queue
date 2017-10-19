@@ -19,18 +19,23 @@ describe "JobsStack" do
     context 'with more jobs ' do
 
       it 'return a sequence with single job' do
-        jobs_in_queue = JobsStack.new('a =>')
-        expect(jobs_in_queue.queue).to eq ['a']
+        jobs_stack = JobsStack.new('a =>')
+        expect(jobs_stack.queue).to eq ['a']
       end
 
       it 'return a sequence with two jobs' do
-        jobs_in_queue = JobsStack.new('a =>\nb =>')
-        expect(jobs_in_queue.queue).to eq ['a','b']
+        jobs_stack = JobsStack.new('a =>\nb =>')
+        expect(jobs_stack.queue).to eq ['a','b']
       end
 
       it 'return a sequence with two jobs (with \n escaped)' do
-        jobs_in_queue = JobsStack.new("a =>\nb =>")
-        expect(jobs_in_queue.queue).to eq ['a','b']
+        jobs_stack = JobsStack.new("a =>\nb =>")
+        expect(jobs_stack.queue).to eq ['a','b']
+      end
+
+      it 'return a sequence with more unsorted jobs' do
+        jobs_stack = JobsStack.new('c =>\na =>\nb =>\n')
+        expect(jobs_stack.queue).to eq ['a','b','c']
       end
 
       # three is the perfect number, but not in our case :)
@@ -65,20 +70,6 @@ describe "JobsStack" do
       # wow!
       # let's see after
       skip
-    end
-
-  end
-
-  context 'then, complex cases' do
-
-    context 'with one dependency' do
-
-    end
-    context 'with two dependencies' do
-
-    end
-    context 'with a lot of dependencies' do
-
     end
 
   end
