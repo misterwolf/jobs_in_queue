@@ -1,4 +1,4 @@
-class JobsInQueue
+class JobsStack
 
   def initialize(jobs)
     # jobs is a string.
@@ -18,9 +18,16 @@ class JobsInQueue
     # regular expression for not dependent job
     # ^ => just one not digit letter. Just one is not specified.
     # $ => the string end there 'a =>' => ok, 'a => ' NO ok!
+    @queue = []
+    jobs = jobs.gsub('\n',"\n") # I really don't like that user have to put "" instead of '' to specific the \n
 
-    jobs = jobs.gsub('\n',"\n") # I really don't like that user have to put "" instead of ''
-    @queue = jobs.scan(/^\D =>$/) # scan is good now to proceed with \n also in ''
+    # grouping the jobs by their format
+    # (\D) => the first job
+    # => is dismessed by the group.
+    # (:?\D|) => something different from number (a \n or a letter) or nothing: ('=>\n', '=>' or '=>b')
+    jobs.scan(/(\D) =>(:?\D|)/).each{ |job|
+      @queue << job.first
+    }
   end
 
   def queue

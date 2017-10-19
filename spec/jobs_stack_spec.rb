@@ -1,16 +1,16 @@
 require 'spec_helper'
-require_relative '../lib/jobs_in_queue'
+require_relative '../lib/jobs_stack'
 
 # preferring BDD!
 
-describe "JobsInQueue" do
+describe "JobsStack" do
 
   context 'testing the simple cases before' do
 
     context 'with no jobs' do
 
       it 'return an empty sequence' do
-        jobs_in_queue = JobsInQueue.new('')
+        jobs_in_queue = JobsStack.new('')
         expect(jobs_in_queue.queue).to eq [] # sequence => [] not ''
       end
 
@@ -19,18 +19,18 @@ describe "JobsInQueue" do
     context 'with more jobs ' do
 
       it 'return a sequence with single job' do
-        jobs_in_queue = JobsInQueue.new('a =>')
-        expect(jobs_in_queue.queue).to eq ['a =>']
+        jobs_in_queue = JobsStack.new('a =>')
+        expect(jobs_in_queue.queue).to eq ['a']
       end
 
       it 'return a sequence with two jobs' do
-        jobs_in_queue = JobsInQueue.new('a =>\nb =>')
-        expect(jobs_in_queue.queue).to eq ['a =>','b =>']
+        jobs_in_queue = JobsStack.new('a =>\nb =>')
+        expect(jobs_in_queue.queue).to eq ['a','b']
       end
 
       it 'return a sequence with two jobs (with \n escaped)' do
-        jobs_in_queue = JobsInQueue.new("a =>\nb =>")
-        expect(jobs_in_queue.queue).to eq ['a =>','b =>']
+        jobs_in_queue = JobsStack.new("a =>\nb =>")
+        expect(jobs_in_queue.queue).to eq ['a','b']
       end
 
       # three is the perfect number, but not in our case :)
