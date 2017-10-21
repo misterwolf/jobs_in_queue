@@ -1,10 +1,8 @@
 class JobsStack
 
   def initialize(jobs)
-    @queue = []
-    @jobs_with_dependency = []
-    @jobs_with_dependency_cloned = []
-
+    @queue  = []
+    @jobs   = []
     # jobs is a string
     # so, two approaches for "parse" the string
     # 1 regular expressions or
@@ -24,63 +22,52 @@ class JobsStack
 
     jobs.gsub!('\n',"\n") # I really don't like that user have to put "" instead of '' to specific the \n
     jobs.gsub!(" ",'')    # It's more confortable check pair with Regular Expression
-    jobs.scan(/(\D)=>(:?\w|)/).each{ |job|
+    jobs.scan(/(\D)=>(:?\w|)/).each { |job|
       @queue << job.first
-      @jobs_with_dependency << job
+      @jobs  << job
     }
-    @jobs_with_dependency_cloned = @jobs_with_dependency.to_h.clone # find a way to create directly an hash!
-    sort_with_no_significant_order
-    sort_jobs_with_dependency     # keep the original
+    @jobs = @jobs.to_h # switch to hash
   end
 
-  def queue
-    @queue
+  # not required
+  # def start_order # not required: to complete the Class for future purpose
+  #   unless @sorted # do not repeat sorting if accidentally called
+  #     @queue_sorted = sort_with_no_significant_order
+  #     @jobs_sorted  = sort
+  #     @sorted  = true
+  #   end
+  # end
+  # def jobs_list
+  #   @queue
+  # end
+  # ------
+
+  def sort_jobs_list
+    @queue.sort { | a, b | a <=> b }
   end
 
-  def original_queue
-    @jobs_with_dependency
-  end
-
-  def sorted_jobs
-    @jobs_with_dependency_cloned
-  end
-
-  private
-
-  # better do not call sort_with_no_significant_order and sort_jobs_with_dependency externally.
-  def sort_with_no_significant_order
-    @queue.sort! {|a,b| a<=>b }
-  end
-
-  # this is my idea and I need to switch to Hash.
   # Check for one free job and add it on stack starting from the last position.
-  # then, if related exists, search it in the next_jobs until it is found, than delete it from stack
-  # sort_jobs_with_dependency method
+  # then, if related exists, search it in the next_jobs until it is found, than add it on new stack
   # => it run a loop where it search for related jobs and job with dependency
-  # => whenever one job is found, it is removed from main stack and put in a sorted one.
-  def sort_jobs_with_dependency
-    stack_with_no_dep, sorted_stack_with_dep = [],[]
-
-    while !@jobs_with_dependency_cloned.empty?
-      job, related_job = @jobs_with_dependency_cloned.first
-      if related_job == ''
-        stack_with_no_dep.unshift(free_job = job) # free a job without dependency
-      else
-        # if job has dependency search for his related job, until the related*n job with out dependency is found
-        # in this way, when a job has more than more than one relate, all of deps will be searched.
-        free_job = search_dep(@jobs_with_dependency_cloned, sorted_stack_with_dep + stack_with_no_dep, job, related_job)
-        sorted_stack_with_dep.push(free_job) # when found add it to sorted stack
-      end
-      @jobs_with_dependency_cloned.delete(free_job) # delete the job just added, it won't be parsed anymore.
+  # => whenever one job is found it is put in a sorted one.
+  def sort
+    sorted_stack = []
+    jobs = @jobs.clone
+    while !jobs.empty?
+      job, related_job = jobs.first
+      # if job has dependency search for his related job, until the related*n job with out dependency is found
+      # in this way, when a job has more than more than one relate, all of deps will be searched.
+      job = search_job_in_deep(jobs, sorted_stack, job, related_job)
+      sorted_stack << job # when found add it to sorted stack
+      jobs.delete(job)
     end
-    @jobs_with_dependency_cloned = sorted_stack_with_dep + stack_with_no_dep
-
+    sorted_stack
   end
 
-  def search_dep(stack, sorted_jobs, job, related_job)
+  def search_job_in_deep(stack, sorted_jobs, job, related_job)
     if stack[related_job] =~ /\w/
-      search_dep(stack, sorted_jobs, related_job, stack[related_job]) # need to further investigate! => related_job has a dependency yet.
-    elsif sorted_jobs.include?(related_job)
+      search_job_in_deep(stack, sorted_jobs, related_job, stack[related_job]) # need to further investigate! => related_job has a dependency yet.
+    elsif related_job.empty? or sorted_jobs.include?(related_job)
       return job # if related_job is included already in the sorted_jobs, then "job" can run
     else
       return related_job # otherwise it hasn't added in the sorted_jobs job

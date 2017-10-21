@@ -6,13 +6,11 @@ require_relative '../lib/jobs_stack'
 describe "JobsStack" do
 
   context 'first step: testing the simple cases' do
-
     context 'with no jobs' do
 
       it 'return an empty sequence' do
-
         jobs_in_queue = JobsStack.new('')
-        expect(jobs_in_queue.queue).to eq []
+        expect(jobs_in_queue.sort_jobs_list).to eq []
       end
 
     end
@@ -20,27 +18,23 @@ describe "JobsStack" do
     context 'with more jobs ' do
 
       it 'return a sequence with single job' do
-
         jobs_stack = JobsStack.new('a =>')
-        expect(jobs_stack.queue).to eq ['a']
+        expect(jobs_stack.sort_jobs_list).to eq ['a']
       end
 
       it 'return a sequence with two jobs' do
-
         jobs_stack = JobsStack.new('a =>\nb =>')
-        expect(jobs_stack.queue).to eq ['a','b']
+        expect(jobs_stack.sort_jobs_list).to eq ['a','b']
       end
 
       it 'return a sequence with two jobs (with \n escaped)' do
-
         jobs_stack = JobsStack.new("a =>\nb =>")
-        expect(jobs_stack.queue).to eq ['a','b']
+        expect(jobs_stack.sort_jobs_list).to eq ['a','b']
       end
 
       it 'return a sequence with more unsorted jobs' do
-
         jobs_stack = JobsStack.new('c =>\na =>\nb =>\n')
-        expect(jobs_stack.queue).to eq ['a','b','c']
+        expect(jobs_stack.sort_jobs_list).to eq ['a','b','c']
       end
 
     end
@@ -54,17 +48,15 @@ describe "JobsStack" do
 
         context 'passing this queue => "a =>\nb => c\nc =>\n"' do
           let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>\n") }
-
-          it 'have a sequence sorted with c at first position, then b, then a' do
-            expect(jobs_stack.sorted_jobs).to eq ['c','b','a']
+          it 'have a sequence sorted with a at first position, then c, then b' do
+            expect(jobs_stack.sort).to eq ['a','c','b']
           end
         end
 
         context 'passing this queue => "a =>b\nb =>\nc =>\n"' do
           let(:jobs_stack) { JobsStack.new("a =>b\nb =>\nc =>\n") }
-
-          it 'have a sequence sorted with b at first position, then a, then c' do
-            expect(jobs_stack.sorted_jobs).to eq ['b','a','c']
+          it 'have a sequence sorted with c at first position, then b, then a' do
+            expect(jobs_stack.sort).to eq ['b', 'a', 'c']
           end
         end
 
@@ -76,8 +68,9 @@ describe "JobsStack" do
         context 'passing this queue a =>\nb => c\nc =>a\n' do
 
           let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>a\n") }
-          it 'have a sequence sorted with c, then b, before a' do
-            expect(jobs_stack.sorted_jobs).to eq ['c','b','a']
+          it 'have a sequence sorted with a, then c, then b' do
+
+            expect(jobs_stack.sort).to eq ['a','c','b']
           end
 
         end
@@ -86,12 +79,11 @@ describe "JobsStack" do
       context 'into a total of four jobs' do
         context 'passing this queue a =>\nb => c\nc => d\nd => \n' do
           let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc => d\nd => \n") }
-
-          it 'have a sequence sorted with d then c then b and the last is a' do
-            expect(jobs_stack.sorted_jobs).to eq ['d','c','b','a']
+          it 'have a sequence sorted with a then d then c and the last is b' do
+            expect(jobs_stack.sort).to eq ['a', 'd','c','b']
           end
           it 'have a sequence sorted alphatecally' do
-            expect(jobs_stack.queue).to eq ['a','b','c','d']
+            expect(jobs_stack.sort_jobs_list).to eq ['a','b','c','d']
           end
         end
       end
@@ -99,13 +91,12 @@ describe "JobsStack" do
     end
 
     context 'with a lot of dependencies' do
-      context 'into a total of five jobs' do
+      context 'into a total of five jobs with common dependencies' do
 
         context 'passing this queue a =>\nb => c\nc =>a\nd=>\ne=>a' do
-
-          let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>a\nd=>\ne=>a") }
-          it 'have a sequence sorted with a, then c, then b, then e and then d' do
-            expect(jobs_stack.sorted_jobs).to eq ['c','b','e','d','a']
+          let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>a\nd=>a\ne=>a") }
+          it 'have a sequence sorted with a, then c, then b, then d and then e' do
+            expect(jobs_stack.sort).to eq ['a','c','b','d','e']
           end
 
         end
