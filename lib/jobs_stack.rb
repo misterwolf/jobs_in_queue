@@ -2,7 +2,7 @@ class JobsStack
 
   class JobsStackError < StandardError
     def initialize(msg=nil)
-      @wrong_job = msg # do it better!
+      @wrong_job = msg
       # others...
     end
   end
@@ -10,6 +10,12 @@ class JobsStack
   class SelfDependencyError < JobsStackError
     def message
       "this job => #{@wrong_job} depends on itself"
+    end
+  end
+
+  class CircularDependencyError < JobsStackError
+    def message
+      "these jobs => #{@wrong_job} depends each other"
     end
   end
 
@@ -38,9 +44,7 @@ class JobsStack
     jobs.gsub!(" ",'')    # It's more confortable check pair with Regular Expression
     jobs.scan(/(\D)=>(:?\w|)/).each { |job|
       @jobs_list << job.first
-      puts job.inspect
-      puts job[0] == job[1]
-      raise JobsStack::SelfDependencyError , "#{job[0]}" if job[0] == job[1]
+      raise JobsStack::SelfDependencyError , "#{job[0].to_s}" if job[0] == job[1]
       @jobs << job
     }
     @jobs = @jobs.to_h # switch to hash
@@ -82,9 +86,11 @@ class JobsStack
     sorted_stack
   end
 
-  def search_job_in_deep(stack, sorted_jobs, job, related_job)
+  def search_job_in_deep(stack, sorted_jobs, job, related_job, searched = []) # i don't like searched
+    raise JobsStack::CircularDependencyError, "#{job}" + " => "+ "#{stack[job]}" if searched.include?(job)
     if stack[related_job] =~ /\w/
-      search_job_in_deep(stack, sorted_jobs, related_job, stack[related_job]) # need to further investigate! => related_job has a dependency yet.
+      searched << job
+      search_job_in_deep(stack, sorted_jobs, related_job, stack[related_job], searched) # need to further investigate! => related_job has a dependency yet.
     elsif related_job.empty? or sorted_jobs.include?(related_job)
       return job # if related_job is included already in the sorted_jobs, then "job" can run
     else

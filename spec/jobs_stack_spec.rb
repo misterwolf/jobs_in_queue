@@ -69,7 +69,6 @@ describe "JobsStack" do
 
           let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>a\n") }
           it 'have a sequence sorted with a, then c, then b' do
-
             expect(jobs_stack.sort).to eq ['a','c','b']
           end
 
@@ -122,15 +121,12 @@ describe "JobsStack" do
     xcontext 'with a not well-formed job' do # not required!!
 
       it 'wrong symbol for dependency' do
-        skip
       end
 
       it 'wrong symbol for dependent job' do
-        # 
       end
 
       it 'wrong symbol for prior job' do
-        # 
       end
 
     end
@@ -143,13 +139,23 @@ describe "JobsStack" do
         )
     end
 
-    it 'circular dependencies' do
-      # wow!
-      # let's see after
-      # 
+    context 'circular dependencies' do
+      it 'when adjacent' do
+        expect{JobsStack.new("a =>b\nb => c\nc =>b").sort}.to raise_exception(
+            JobsStack::CircularDependencyError,
+            "these jobs => b => c depends each other"
+          )
+      end
+      it 'when far away' do
+        expect{JobsStack.new("a =>b\nb => c\nc =>a").sort}.to raise_exception(
+            JobsStack::CircularDependencyError,
+            "these jobs => a => b depends each other"
+          )
+      end
     end
 
     it 'all jobs are dependents' do
+
     end
 
   end
