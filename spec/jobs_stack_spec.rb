@@ -102,16 +102,27 @@ describe "JobsStack" do
         end
       end
 
+      # the one proposed from the OTB:
+      context 'into a total of six jobs' do
+        context 'passing this queue a =>\nb => c\nc => f\nd => a\ne =>b\nf =>\n' do
+          let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc => f\nd => a\ne => b\nf =>\n") }
+          it 'f before c, c before b, b before e and a before d' do
+            expect(jobs_stack.sort).to eq ['a','f','c','b','d','e']
+            # I completely misunderstood the initial purpose of the test.
+            # At first I assumed that the works had to have this sequence:
+            # [a,d,f,c,b,d,e] => important is that related figures BEFORE the dependency
+          end
+        end
+      end
     end
-
   end
 
   context 'then, error or exception cases' do
 
-    context 'with a not well-formed job' do
+    xcontext 'with a not well-formed job' do # not required!!
 
       it 'wrong symbol for dependency' do
-        # 
+        skip
       end
 
       it 'wrong symbol for dependent job' do
@@ -124,8 +135,12 @@ describe "JobsStack" do
 
     end
 
-    it 'dead lock dependency (when a job depends from itself)' do
-      # 
+    it 'Job depends on its self ("a =>\nb => b")' do
+
+      expect{JobsStack.new("a =>\nb => b")}.to raise_exception(
+          JobsStack::SelfDependencyError,
+          "this job => b depends on itself"
+        )
     end
 
     it 'circular dependencies' do

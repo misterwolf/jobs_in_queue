@@ -1,7 +1,21 @@
 class JobsStack
 
+  class JobsStackError < StandardError
+    def initialize(msg=nil)
+      @wrong_job = msg # do it better!
+      # others...
+    end
+  end
+
+  class SelfDependencyError < JobsStackError
+    def message
+      "this job => #{@wrong_job} depends on itself"
+    end
+  end
+
   def initialize(jobs)
-    @queue  = []
+    # IMHO: error check must be done in initialization
+    @jobs_list  = []
     @jobs   = []
     # jobs is a string
     # so, two approaches for "parse" the string
@@ -23,27 +37,31 @@ class JobsStack
     jobs.gsub!('\n',"\n") # I really don't like that user have to put "" instead of '' to specific the \n
     jobs.gsub!(" ",'')    # It's more confortable check pair with Regular Expression
     jobs.scan(/(\D)=>(:?\w|)/).each { |job|
-      @queue << job.first
-      @jobs  << job
+      @jobs_list << job.first
+      puts job.inspect
+      puts job[0] == job[1]
+      raise JobsStack::SelfDependencyError , "#{job[0]}" if job[0] == job[1]
+      @jobs << job
     }
     @jobs = @jobs.to_h # switch to hash
+
   end
 
   # not required
   # def start_order # not required: to complete the Class for future purpose
   #   unless @sorted # do not repeat sorting if accidentally called
-  #     @queue_sorted = sort_with_no_significant_order
+  #     @jobs_list_sorted = sort_with_no_significant_order
   #     @jobs_sorted  = sort
   #     @sorted  = true
   #   end
   # end
   # def jobs_list
-  #   @queue
+  #   @jobs_list
   # end
   # ------
 
   def sort_jobs_list
-    @queue.sort { | a, b | a <=> b }
+    @jobs_list.sort { | a, b | a <=> b }
   end
 
   # Check for one free job and add it on stack starting from the last position.
@@ -55,8 +73,8 @@ class JobsStack
     jobs = @jobs.clone
     while !jobs.empty?
       job, related_job = jobs.first
-      # if job has dependency search for his related job, until the related*n job with out dependency is found
-      # in this way, when a job has more than more than one relate, all of deps will be searched.
+      # if job has a dependency, search for its related job, until the related*n job without dependency is found
+      # in this way, when a job has more than one relate, all of deps will be searched.
       job = search_job_in_deep(jobs, sorted_stack, job, related_job)
       sorted_stack << job # when found add it to sorted stack
       jobs.delete(job)
