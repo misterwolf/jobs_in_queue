@@ -5,7 +5,7 @@ require_relative '../lib/jobs_stack'
 
 describe "JobsStack" do
 
-  context 'first step: testing the simple cases' do
+  context 'first step: testing simple cases' do
     context 'with no jobs' do
 
       it 'return an empty sequence' do
@@ -15,7 +15,7 @@ describe "JobsStack" do
 
     end
 
-    context 'with more jobs ' do
+    context 'with one or more jobs ' do
 
       it 'return a sequence with single job' do
         jobs_stack = JobsStack.new('a =>')
@@ -44,23 +44,21 @@ describe "JobsStack" do
   context 'then, more complex cases: ' do
 
     context 'with one dependency' do
-      context 'into a total of three jobs' do
 
-        context 'passing this queue => "a =>\nb => c\nc =>\n"' do
-          let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>\n") }
-          it 'have a sequence sorted with a at first position, then c, then b' do
-            expect(jobs_stack.sort).to eq ['a','c','b']
-          end
+      context 'passing this queue => "a =>\nb => c\nc =>\n"' do
+        let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>\n") }
+        it 'have a sequence sorted with a at first position, then c, then b' do
+          expect(jobs_stack.sort).to eq ['a','c','b']
         end
-
-        context 'passing this queue => "a =>b\nb =>\nc =>\n"' do
-          let(:jobs_stack) { JobsStack.new("a =>b\nb =>\nc =>\n") }
-          it 'have a sequence sorted with c at first position, then b, then a' do
-            expect(jobs_stack.sort).to eq ['b', 'a', 'c']
-          end
-        end
-
       end
+
+      context 'passing this queue => "a =>b\nb =>\nc =>\n"' do
+        let(:jobs_stack) { JobsStack.new("a =>b\nb =>\nc =>\n") }
+        it 'have a sequence sorted with c at first position, then b, then a' do
+          expect(jobs_stack.sort).to eq ['b', 'a', 'c']
+        end
+      end
+
     end
     context 'with two dependency' do
       context 'into a total of three jobs' do
@@ -68,7 +66,7 @@ describe "JobsStack" do
         context 'passing this queue a =>\nb => c\nc =>a\n' do
 
           let(:jobs_stack) { JobsStack.new("a =>\nb => c\nc =>a\n") }
-          it 'have a sequence sorted with a, then c, then b' do
+          it 'have this sequence sorted with a, then c, then b' do
             expect(jobs_stack.sort).to eq ['a','c','b']
           end
 
@@ -81,7 +79,7 @@ describe "JobsStack" do
           it 'have a sequence sorted with a then d then c and the last is b' do
             expect(jobs_stack.sort).to eq ['a', 'd','c','b']
           end
-          it 'have a sequence sorted alphatecally' do
+          it 'have a sequence sorted alphatecally: ["a","b","c","d"]' do
             expect(jobs_stack.sort_jobs_list).to eq ['a','b','c','d']
           end
         end
@@ -108,8 +106,9 @@ describe "JobsStack" do
           it 'f before c, c before b, b before e and a before d' do
             expect(jobs_stack.sort).to eq ['a','f','c','b','d','e']
             # I completely misunderstood the initial purpose of the test.
-            # At first I assumed that the works had to have this sequence:
-            # [a,d,f,c,b,d,e] => important is that related figures BEFORE the dependency
+            # At first I assumed that the sequence had to be this:
+            # [a,d,f,c,b,d,e]
+            # instead, important is that related jobs are insrted BEFORE of the dependent one.
           end
         end
       end
@@ -120,20 +119,19 @@ describe "JobsStack" do
 
     xcontext 'with a not well-formed job' do # not required!!
 
-      it 'wrong symbol for dependency' do
+      xit 'wrong symbol for dependency' do
       end
 
-      it 'wrong symbol for dependent job' do
+      xit 'wrong symbol for dependent job' do
       end
 
-      it 'wrong symbol for prior job' do
+      xit 'wrong symbol for prior job' do
       end
 
     end
 
     it 'Job depends on its self ("a =>\nb => b")' do
-
-      expect{JobsStack.new("a =>\nb => b")}.to raise_exception(
+      expect{JobsStack.new("a =>\nb => b").sort}.to raise_exception(
           JobsStack::SelfDependencyError,
           "this job => b depends on itself"
         )
@@ -141,21 +139,17 @@ describe "JobsStack" do
 
     context 'circular dependencies' do
       it 'when adjacent' do
-        expect{JobsStack.new("a =>b\nb => c\nc =>b")}.to raise_exception(
+        expect{JobsStack.new("a =>b\nb => c\nc =>b").sort}.to raise_exception(
             JobsStack::CircularDependencyError,
             "these jobs => b => c depends each other"
           )
       end
-      it 'when far away' do
-        expect{JobsStack.new("a =>b\nb => c\nc =>a")}.to raise_exception(
+      it 'when distant' do
+        expect{JobsStack.new("a =>b\nb => c\nc =>a").sort}.to raise_exception(
             JobsStack::CircularDependencyError,
             "these jobs => a => b depends each other"
           )
       end
-    end
-
-    it 'all jobs are dependents' do
-
     end
 
   end
