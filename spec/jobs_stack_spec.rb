@@ -141,13 +141,13 @@ describe "JobsStack" do
 
     context 'circular dependencies' do
       it 'when adjacent' do
-        expect{JobsStack.new("a =>b\nb => c\nc =>b").sort}.to raise_exception(
+        expect{JobsStack.new("a =>b\nb => c\nc =>b")}.to raise_exception(
             JobsStack::CircularDependencyError,
             "these jobs => b => c depends each other"
           )
       end
       it 'when far away' do
-        expect{JobsStack.new("a =>b\nb => c\nc =>a").sort}.to raise_exception(
+        expect{JobsStack.new("a =>b\nb => c\nc =>a")}.to raise_exception(
             JobsStack::CircularDependencyError,
             "these jobs => a => b depends each other"
           )

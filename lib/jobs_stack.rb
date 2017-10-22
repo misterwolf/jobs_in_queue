@@ -48,7 +48,10 @@ class JobsStack
       @jobs << job
     }
     @jobs = @jobs.to_h # switch to hash
-
+    @jobs.inject({}) {|sorted_jobs, pair| # check dependency now, inject is good.
+      job, related_job = pair
+      search_job_in_deep(@jobs, sorted_jobs, job, related_job)
+    }
   end
 
   # not required
@@ -87,7 +90,7 @@ class JobsStack
   end
 
   def search_job_in_deep(stack, sorted_jobs, job, related_job, searched = []) # i don't like searched
-    raise JobsStack::CircularDependencyError, "#{job}" + " => "+ "#{stack[job]}" if searched.include?(job)
+      raise JobsStack::CircularDependencyError, "#{job}" + " => "+ "#{stack[job]}" if searched.include?(job)
     if stack[related_job] =~ /\w/
       searched << job
       search_job_in_deep(stack, sorted_jobs, related_job, stack[related_job], searched) # need to further investigate! => related_job has a dependency yet.
