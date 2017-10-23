@@ -1,3 +1,3 @@
-# My approach to the problems.
+# My approach to problems.
 
 ### Test specification in ```doc``` directory
